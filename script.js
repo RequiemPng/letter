@@ -2,8 +2,15 @@
 const envelope = document.getElementById("envelope");
 const letter = document.getElementById("letter");
 const openButton = document.getElementById("openButton");
+const playerToggle = document.getElementById("playerToggle");
+const bgm = document.getElementById("bgm");
 
 const flowerCount = 18;
+let setButtonState = () => {};
+
+if (bgm) {
+  bgm.volume = 0.1;
+}
 
 const createFlower = () => {
   const flower = document.createElement("span");
@@ -33,6 +40,11 @@ const openLetter = () => {
   envelope.classList.add("is-open");
   letter.classList.add("is-visible");
   letter.setAttribute("aria-hidden", "false");
+  if (bgm && bgm.paused) {
+    bgm.play()
+      .then(() => setButtonState(true))
+      .catch(() => setButtonState(false));
+  }
 };
 
 openButton.addEventListener("click", openLetter);
@@ -42,3 +54,25 @@ envelope.addEventListener("click", openLetter);
 seedFlowers();
 
 window.addEventListener("resize", seedFlowers);
+
+if (playerToggle && bgm) {
+  setButtonState = (isPlaying) => {
+    playerToggle.textContent = isPlaying ? "❚❚" : "▶";
+  };
+
+  playerToggle.addEventListener("click", async () => {
+    try {
+      if (bgm.paused) {
+        await bgm.play();
+        setButtonState(true);
+      } else {
+        bgm.pause();
+        setButtonState(false);
+      }
+    } catch (err) {
+      setButtonState(false);
+    }
+  });
+
+  bgm.addEventListener("ended", () => setButtonState(false));
+}
